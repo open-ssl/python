@@ -1,11 +1,14 @@
-from math import sqrt
+'''
+Write a function that finds the longest word in a sentence.
+If two or more words are found, return the first longest word.
+Characters such as apostophe, comma, period (and the like) count as part of the word (e.g. O'Connor is 8 characters long).
+'''
 
-def quadratic_equation(a, b, c):
-    d = sqrt(b ** 2 - 4 * a * c)
-    r1 = -b + int(d) // (2 * a)
-    r2 =  -b -  int(sqrt(d)) // (2 * a)
-    return (r1, r2, d)
-    return int(r1) if int(r1) - r1 == 0 else int(r2)
+def longest_word(txt):
+    lst = [len(item) for index, item in enumerate(txt.split(' '))]
+    return txt.split(' ')[lst.index(max(lst))]
 
 
-print(quadratic_equation(1, 2, -3))
+# longest_word("Hello darkness my old friend.") ➞ "darkness"
+# longest_word("Hello there mate.") ➞ "Hello"
+# longest_word("Margaret's toy is plastic.") ➞ "Margaret's"
