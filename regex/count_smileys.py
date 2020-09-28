@@ -24,6 +24,6 @@ class Test(unittest.TestCase):
 if __name__ == '__main__':
     unittest.main()
 
-# count_smileys([":)", ";(", ";}", ":-D"]) ➞ 2
-# count_smileys([";D", ":-(", ":-)", ";~)"]) ➞ 3
-# count_smileys([";]", ":[", ";*", ":$", ";-D"]) ➞ 1
+# count_smileys([":)", ";(", ";}", ":-D"]) 2
+# count_smileys([";D", ":-(", ":-)", ";~)"])  3
+# count_smileys([";]", ":[", ";*", ":$", ";-D"])  1
