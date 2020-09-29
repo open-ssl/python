@@ -1,4 +1,5 @@
 # Text Type:
+import random
 
 str
 print(str('stas'))
@@ -53,3 +54,10 @@ print(bool(False))
 
 # Binary Types:
 bytes, bytearray, memoryview
+
+
+print(b"Hello"[0])
+
+
+print("RANDOM NUMBER IS {}".format(random.randrange(1, 10)))
+# print(random.randrange(1, 10))
