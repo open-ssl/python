@@ -1,0 +1,35 @@
+# запуск всего
+python3 manage.py runserver
+
+Запуск
+mkvirtualenv my_django_environment
+
+deactivate
+
+workon
+
+workon name_of_environment
+
+
+rmvirtualenv name_of_environment
+
+
+
+Алгоритм следующий:
+
+1. Использовать django-admin для создания папки проекта, шаблонов остальных
+файлов, и скрипта для управления проектом (manage.py).
+2. Использовать manage.py для создания одного или нескольких приложений
+3. Зарегистрировать в настройках эти приложения, чтобы использовать их в проекте.
+4. Настроить маршруты url адресов для каждого из приложений.
+
+# каждый раз добавляя новую модель
+# надо обновить конфигурацию базу данных
+python3 manage.py makemigrations
+python3 manage.py migrate
+
+
+# создать проект
+django-admin startproject locallibrary
+# добавить новый каталог
+python3 manage.py startapp catalog
