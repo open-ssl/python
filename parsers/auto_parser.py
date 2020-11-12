@@ -2,7 +2,10 @@
 import requests
 import sys
 from bs4 import BeautifulSoup
+import csv
 import unittest
+import os
+
 # 3.7.1.
 HOST = 'https://auto.ria.com'
 URL = f'{HOST}/newauto/marka-lexus/'
@@ -11,6 +14,7 @@ HEADERS = {
     (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36',
     'accept': '*/*'
 }
+FILE = 'cars.csv'
 
 def get_html(url, params=None):
     r = requests.get(url, headers=HEADERS, params=params)
@@ -35,17 +39,46 @@ def get_content(html):
             'price_in_dollars': price_in_dollars,
             'price_in_gr': price_in_gr
         })
-    for i in cars:
-        print(i)
+    # for i in cars:
+    #     print(i)
     return cars
+
+def get_pages_count(html):
+    soup = BeautifulSoup(html, 'html.parser')
+    pagination = soup.find_all('span', 'mhide')
+    count = len(pagination) -1
+    return count if count != -1 else 1
+
+    # for rec in pagination:
+        # print(rec.encode('utf-8'))
 
 def parse():
     html = get_html(URL)
     if html.status_code == 200:
         # print(html.text.encode('utf8'))
-        cars = get_content(html.text)
+        cars = []
+        count = get_pages_count(html.text)
+        for page in range(1, count + 1):
+            print(f'Парсинг страницы {page} из {count}'.encode('Windows-1251'))
+            html = get_html(URL, params={'page': page})
+            cars.extend(get_content(html.text))
+        print(f'Получено: {len(cars)} автомобилей')
+        save_file(cars, FILE)
+        os.startfile(FILE)
+        # cars = get_content(html.text)
     else:
         print('все плохо')
+
+def save_file(items, path):
+    with open(path, 'w', newline='') as file:
+        writer = csv.writer(file, delimiter=';')
+        writer.writerow(['Марка', 'Ссылка', 'Цена в долларах', 'Цена в гривнах'])
+        for item in items:
+            writer.writerow([item['title'], item['link'], item['price_in_dollars'], item['price_in_gr']])
+
+
+
+
 # print(sys.version)
 # print('all ok')
 # print(get_html(URL).headers)
