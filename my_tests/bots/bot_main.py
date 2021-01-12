@@ -1,12 +1,15 @@
+# -*- coding: utf-8 -*-
 import telebot
+from telebot import types
+import time
 # import config
 # ps aux | grep python
 import sqlite3
 from sql.classes import SQL_ConnectTable, SQL_EnglishWords_Table, \
-                    SQL_UserTable
+                    SQL_UserTable, SQL_Main
 
-token = '1000988391:AAHUIFhz-JFhWE2YcqPetaLUyk0WMUr2z8I'
-owner_id = int(465146483)
+token = ''
+owner_id = int()
 database_name = 'bot.db'
 
 bot = telebot.TeleBot(token)
@@ -45,28 +48,60 @@ bot = telebot.TeleBot(token)
 
 @bot.message_handler(content_types=["text"])
 def text_handler(message): # Название функции не играет никакой роли, в принципе
-    comment_no_words = f'Пока я не умею распознавать текст {message.text}. Нужно пользоваться функциями)'
-    bot.send_message(message.chat.id, comment_no_words)
+    connect_obj = SQL_Main(database_name)
+    msg = keyboard = None
+    if message.text == 'text':
+        msg = 'Пока я не умею распознавать текст {}.Нужно пользоваться функциями)'.format(message.text)
+    elif message.text == '/level1':
+        words = connect_obj.select_word()
+        connect_obj.close()
+        msg = 'Из базы приехало -  {0} и {1}'.format(words[0][1], words[0][2])
+    elif message.text == '/rename':
+        sended_msg = bot.send_message(message.chat.id, 'Введи новое имя:')
+        bot.register_next_step_handler(sended_msg, rename)
+    elif message.text == '/start':
+        connect_obj.add_new_user(message.chat.id, message.chat.first_name)
+        # keyboard = types.InlineKeyboardMarkup()
+        # url_button1 = types.InlineKeyboardButton(text="Да, это я", callback_data="name_true")
+        # url_button2 = types.InlineKeyboardButton(text="Ввести своё имя", callback_data="name_false")
+        # keyboard.add(url_button1)
+        # keyboard.add(url_button2)
+        msg = """Привет {}! Это бот, который поможет тебе изучать новые иностранные слова!\nИмя, доступное боту, всегда можно поменять командой /rename""".format(message.chat.first_name)
+        bot.send_message(message.chat.id, msg, reply_markup=keyboard)
+        time.sleep(2)
+        msg = """Для корректной работы мне нужно знать твое время. Иначе жди сообщений посреди ночи)) Выбери нужный часовой пояс или введи с клавиатуры""".format(message.chat.first_name)
+        time_input = bot.send_message(message.chat.id, msg, reply_markup=keyboard)
+        # msg = """По умолчанию ты работаешь с уровнем 1 - команда /level1\nДля усложнения активируй /level2\n/info - вызов информации\nПриятного общения =)""".format(message.chat.first_name)
+    elif message.text == '/info':
+        msg = """Доступные команды:\nПервый уровень - /level1\nВторой уровень - /level2\n
+        ss - Пауза. Слова будут спрашиваться через определенное время\nВызов информации - /info
+        """
+    else:
+        msg = message.chat.id
 
-@bot.message_handler(commands=['level1'])
-def command_hello(message):
-    tmp = SQL_EnglishWords_Table(database_name)
-    tmp.set_level()
-    count_level1 = tmp.get_level1_words_count()
-    msg = 'В базе для level 1 лежит {} слов'.format(count_level1)
-    bot.send_message(message.chat.id, msg)
-    tmp.ew_close()
+    if msg:
+        bot.send_message(message.chat.id, msg, reply_markup=keyboard)
+
+
+@bot.callback_query_handler(func=lambda call: True)
+def callback_inline(call):
+    if call.message:
+        connect_obj = SQL_Main(database_name)
+        if call.data == "name_true":
+            connect_obj.add_new_user(call.message.chat.id, call.message.chat.first_name)
+            bot.send_message(call.message.chat.id, 'ok!')
+        elif call.data == "name_false":
+            bot.send_message(call.message.chat.id, 'Чтобы задать имя используй команду /rename')
+
+def rename(message):
+    chat_id, new_name = message.chat.id, message.text
+    connect_obj = SQL_Main(database_name)
+    connect_obj.rename_user(chat_id, new_name)
+    bot.send_message(chat_id, f'Имя {new_name} установлено как текущее')
+
 
 if __name__ == '__main__':
-    connect_table_obj = SQL_ConnectTable(database_name)
-    connect_table_obj.ct_close()
-    e_words_table_obj = SQL_EnglishWords_Table(database_name)
-    e_words_table_obj.set_level1()
-    level1_count = e_words_table_obj.get_level1_words_count()
-    print("В таблице Level1 {} слов".format(level1_count))
-    e_words_table_obj.ew_close()
-    # user_table_obj = SQL_UserTable(database_name)
-    # user_table_obj.ut_close()
-    print('ok')
-
+    # if int(time.strftime('%w')) not in
+    bot.send_message(, 'bot started')
+    print('bot started')
     bot.polling(none_stop=True)
