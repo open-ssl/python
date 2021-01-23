@@ -1,5 +1,8 @@
 import sqlite3
 import weakref
+import schedule
+import time
+import telebot
 
 class SQL_Main:
     """
@@ -146,3 +149,24 @@ class UserCache:
             self.cache_LRU.remove(value)
         self.cache_LRU = self.cache_LRU[-(self.cacheSize-1):] + [ value ]
         return value
+
+
+class Process_sender():
+
+    @classmethod
+    def start_sender(self):
+        msg = 'Сообщение пришедшее один раз'
+        schedule.every(1).minutes.do(Process_sender.send_pack, msg)
+        #  рандомное время
+        # schedule.every(5).to(10).seconds.do(my_job)
+        # если время по базе
+        schedule.clear('daily-tasks')
+        while True: #Запуск цикла
+            schedule.run_pending()
+            time.sleep(1)
+
+
+    def send_pack(msg):
+        from bot_main import bot
+        bot.send_message(, msg)
+        return schedule.CancelJob

@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
 import telebot
 from telebot import types
+from multiprocessing import Process
 import time
 # import config
 # ps aux | grep python
-# ps -elf | grep python
+# pkill -9 -f bot_main.py
 
 import sqlite3
 from sql.classes import SQL_ConnectTable, SQL_EnglishWords_Table, \
-                    SQL_UserTable, SQL_Main, UserCache
+                    SQL_UserTable, SQL_Main, UserCache, Process_sender
 
-token = '1000988391:AAHUIFhz-JFhWE2YcqPetaLUyk0WMUr2z8I'
-owner_id = int(465146483)
+token = ''
+owner_id = int()
 database_name = 'bot.db'
 choise_time_dict = {
     'UTC+2': 'Калининград UTC+2',
@@ -59,7 +60,52 @@ cache = UserCache(2)
 #         markup.add(item)
     # return markup
 
-# finish
+@bot.message_handler(commands=['level1'])
+def get_words_command(message):
+    connect_obj = SQL_Main(database_name)
+    msg = keyboard = None
+    words = connect_obj.select_word()
+    connect_obj.close()
+    msg = 'Из базы приехало -  {0} и {1}'.format(words[0][1], words[0][2])
+    if msg:
+        bot.send_message(message.chat.id, msg, reply_markup=keyboard)
+
+@bot.message_handler(commands=['rename'])
+def rename_user_command(message):
+    sended_msg = bot.send_message(message.chat.id, 'Введи новое имя:')
+    bot.register_next_step_handler(sended_msg, rename)
+
+@bot.message_handler(commands=['start'])
+def start_command(message):
+    connect_obj = SQL_Main(database_name)
+    msg = keyboard = None
+    cache[message.chat.id] = 'start'
+    connect_obj.add_new_user(message.chat.id, message.chat.first_name)
+    msg = """Привет {}! Это бот, который поможет тебе изучать новые иностранные слова!\nИмя, доступное боту, всегда можно поменять командой /rename""".format(message.chat.first_name)
+    bot.send_message(message.chat.id, msg, reply_markup=keyboard)
+    time.sleep(2)
+    keyboard = types.InlineKeyboardMarkup()
+    for key in choise_time_dict:
+        keyboard.add(types.InlineKeyboardButton(text=choise_time_dict[key], callback_data=key))
+    msg = "Для корректной работы мне нужно знать твое время. Иначе жди сообщений посреди ночи)) Выбери нужный часовой пояс или введи с клавиатуры".format(message.chat.first_name)
+    bot.send_message(message.chat.id, msg, reply_markup=keyboard)
+    keyboard = types.InlineKeyboardMarkup()
+    while True:
+        time.sleep(1)
+        if cache[message.chat.id] == 'time_putted':
+            time.sleep(2)
+            msg = """Бот работает с понедельника по пятницу с 10-00 до 18-00, присылая сообщения со случайным интервалом в 20-25 минут\n/info - вызов информации\nПриятного общения =)""".format(message.chat.first_name)
+            keyboard.add(types.InlineKeyboardButton(text='Go Go Go!', callback_data='go'))
+            break
+
+    bot.send_message(message.chat.id, msg, reply_markup=keyboard)
+
+@bot.message_handler(commands=['info'])
+def info_command(message):
+    msg = """Доступные команды:\nПервый уровень - /level1\nВторой уровень - /level2\n
+    ss - Пауза. Слова будут спрашиваться через определенное время\nВызов информации - /info
+    """
+    bot.send_message(message.chat.id, msg)
 
 @bot.message_handler(content_types=["text"])
 def text_handler(message): # Название функции не играет никакой роли, в принципе
@@ -67,36 +113,40 @@ def text_handler(message): # Название функции не играет �
     msg = keyboard = None
     if message.text == 'text':
         msg = 'Пока я не умею распознавать текст {}.Нужно пользоваться функциями)'.format(message.text)
-    elif message.text == '/level1':
-        words = connect_obj.select_word()
-        connect_obj.close()
-        msg = 'Из базы приехало -  {0} и {1}'.format(words[0][1], words[0][2])
+    # elif message.text == '/level1':
+    #     words = connect_obj.select_word()
+    #     connect_obj.close()
+    #     msg = 'Из базы приехало -  {0} и {1}'.format(words[0][1], words[0][2])
     elif message.text == '/users':
-        connect_obj.get_all_user()
-    elif message.text == '/rename':
-        sended_msg = bot.send_message(message.chat.id, 'Введи новое имя:')
-        bot.register_next_step_handler(sended_msg, rename)
-    elif message.text == '/start':
-        cache[message.chat.id] = 'start'
-        connect_obj.add_new_user(message.chat.id, message.chat.first_name)
-        msg = """Привет {}! Это бот, который поможет тебе изучать новые иностранные слова!\nИмя, доступное боту, всегда можно поменять командой /rename""".format(message.chat.first_name)
-        bot.send_message(message.chat.id, msg, reply_markup=keyboard)
-        time.sleep(2)
-        keyboard = types.InlineKeyboardMarkup()
-        for key in choise_time_dict:
-            keyboard.add(types.InlineKeyboardButton(text=choise_time_dict[key], callback_data=key))
-        msg = """Для корректной работы мне нужно знать твое время. Иначе жди сообщений посреди ночи)) Выбери нужный часовой пояс или введи с клавиатуры""".format(message.chat.first_name)
-        bot.send_message(message.chat.id, msg, reply_markup=keyboard)
-        keyboard = None
-        while True:
-            if cache[message.chat.id] == 'time_putted':
-                bot.send_message(message.chat.id, 'Время установлено')
-                msg = """По умолчанию ты работаешь с уровнем 1 - команда /level1\nДля усложнения активируй /level2\n/info - вызов информации\nПриятного общения =)""".format(message.chat.first_name)
-                break
-    elif message.text == '/info':
-        msg = """Доступные команды:\nПервый уровень - /level1\nВторой уровень - /level2\n
-        ss - Пауза. Слова будут спрашиваться через определенное время\nВызов информации - /info
-        """
+        msg = connect_obj.get_all_user()
+    # elif message.text == '/rename':
+    #     sended_msg = bot.send_message(message.chat.id, 'Введи новое имя:')
+    #     bot.register_next_step_handler(sended_msg, rename)
+    # elif message.text == '/start':
+    #     cache[message.chat.id] = 'start'
+    #     connect_obj.add_new_user(message.chat.id, message.chat.first_name)
+    #     msg = """Привет {}! Это бот, который поможет тебе изучать новые иностранные слова!\nИмя, доступное боту, всегда можно поменять командой /rename""".format(message.chat.first_name)
+    #     bot.send_message(message.chat.id, msg, reply_markup=keyboard)
+    #     time.sleep(2)
+    #     keyboard = types.InlineKeyboardMarkup()
+    #     for key in choise_time_dict:
+    #         keyboard.add(types.InlineKeyboardButton(text=choise_time_dict[key], callback_data=key))
+    #     msg = "Для корректной работы мне нужно знать твое время. Иначе жди сообщений посреди ночи)) Выбери нужный часовой пояс или введи с клавиатуры".format(message.chat.first_name)
+    #     bot.send_message(message.chat.id, msg, reply_markup=keyboard)
+    #     keyboard = types.InlineKeyboardMarkup()
+    #     while True:
+    #         time.sleep(1)
+    #         if cache[message.chat.id] == 'time_putted':
+    #             time.sleep(2)
+    #             msg = """Бот работает с понедельника по пятницу с 10-00 до 18-00, присылая сообщения со случайным интервалом в 20-25 минут\n/info - вызов информации\nПриятного общения =)""".format(message.chat.first_name)
+    #             keyboard.add(types.InlineKeyboardButton(text='Go Go Go!', callback_data='go'))
+    #             break
+    #####################
+        # msg = "Бот работает с понедельника по пятницу с 10-00 до 18-00, присылая сообщения со случайным интервалом в 20-25 минут. Если необходимо что-то поменять пользуйся командами\n/set_day - установить дни работы бота\n/set_time - установить время работы бота\n/set_period - изменить интервал сообщений"
+    # elif message.text == '/info':
+    #     msg = """Доступные команды:\nПервый уровень - /level1\nВторой уровень - /level2\n
+    #     ss - Пауза. Слова будут спрашиваться через определенное время\nВызов информации - /info
+    #     """
     else:
         msg = message.chat.id
 
@@ -114,11 +164,15 @@ def callback_inline(call):
                 bot.register_next_step_handler(time_sended_msg, set_time)
             else:
                 connect_obj.set_user_time(call.message.chat.id, call.data[3:])
-                bot.send_message(call.message.chat.id, f'Время {call.data[3:]} установлено ')
+                bot.send_message(call.message.chat.id, f'Время {call.data[3:]} установлено')
                 cache[call.message.chat.id] = 'time_putted'
-        # elif call.data == "name_false":
-        #     bot.send_message(call.message.chat.id, 'Чтобы задать имя используй команду /rename')
-        #     cache[call.message.chat.id] = 'time_putted'
+        elif call.data == "name_false":
+            bot.send_message(call.message.chat.id, 'Чтобы задать имя используй команду /rename')
+
+
+
+def start_learn_process():
+    process_send_message = Process(target=Process_sender.start_sender, args=()).start()
 
 def rename(message):
     chat_id, new_name = message.chat.id, message.text
@@ -129,18 +183,20 @@ def rename(message):
 def set_time(message):
     chat_id, inputed_time = message.chat.id, message.text
     connect_obj = SQL_Main(database_name)
-    try:
-        if str(inputed_time) and len(inputed_time) > 1 and inputed_time[0] in ['+', '-'] and int(inputed_time[1:]):
-            connect_obj.set_user_time(chat_id, inputed_time)
-            bot.send_message(chat_id, f'Время {inputed_time} установлено')
-            cache[call.message.chat.id] = 'time_putted'
-    except:
-        time_sended_msg = bot.send_message(chat_id, 'Введите время в формате UTC например "+4" или "-10"')
+    if len(inputed_time) < 4 and inputed_time[0] in ['+', '-'] and int(inputed_time[1:]):
+        connect_obj.set_user_time(chat_id, inputed_time)
+        bot.send_message(chat_id, f'Время {inputed_time} установлено')
+        cache[message.chat.id] = 'time_putted'
+    else:
+        time_sended_msg = bot.send_message(chat_id, 'Введите время в формате UTC например "+4" или "-10"???!')
         bot.register_next_step_handler(time_sended_msg, set_time)
-
 
 if __name__ == '__main__':
     # if int(time.strftime('%w')) not in
-    bot.send_message(465146483, 'bot started')
+    # bot.send_message(, 'bot started')
+    start_learn_process()
     print('bot started')
-    bot.polling(none_stop=True)
+    try:
+        bot.polling(none_stop=True)
+    except:
+        print('arr')
