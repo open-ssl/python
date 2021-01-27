@@ -3,6 +3,9 @@ import weakref
 import schedule
 import time
 import telebot
+import numpy as np
+import json
+
 
 class SQL_Main:
     """
@@ -16,7 +19,7 @@ class SQL_Main:
     def select_word(self):
         """ Получаем все строки """
         with self.connection:
-             obj = self.cursor.execute('SELECT * FROM english_words_table').fetchall()
+             obj = self.cursor.execute('SELECT * FROM level1_table').fetchall()
              return obj
 
 
@@ -26,9 +29,9 @@ class SQL_Main:
             print(chat_id)
             # (user_id integer, level_id integer user_name text)
             # obj = self.cursor.execute("SELECT 1 FROM user_table WHERE user_id = ?", chat_id)
-            obj = self.cursor.execute('SELECT * FROM user_table WHERE user_id = ?', (chat_id,)).fetchall()
+            obj = self.cursor.execute('SELECT 1 FROM user_table WHERE user_id = ?', (chat_id,)).fetchall()
             if not obj:
-                self.cursor.execute("INSERT INTO user_table VALUES(?, ?, ?, ?)", (chat_id, 1, username, '0'))
+                self.cursor.execute("INSERT INTO user_table VALUES(?, ?, ?, ?, ?, ?, ?, ?)", (chat_id, 1, username, '0', 10, 17, json.dumps([1,2,3,4,5]), 25))
                 self.connection.commit()
                 print('ADDED USER IN TABLE')
 
@@ -53,6 +56,11 @@ class SQL_Main:
             obj = self.cursor.execute('SELECT * FROM user_table').fetchall()
             print(obj)
 
+    def get_time_borders(self, user_id):
+        with self.connection:
+            time_obj = self.cursor.execute('SELECT time_from, time_to FROM user_table WHERE user_id = ?', (user_id,)).fetchall()
+            return (time_obj[0][0], time_obj[0][1])
+
     def close(self):
         self.connection.close()
 
@@ -75,7 +83,7 @@ class SQL_ConnectTable:
 
 
 
-class SQL_EnglishWords_Table:
+class SQL_Level1_Table:
 
     def __init__(self, database=None):
         if not database:
@@ -83,13 +91,13 @@ class SQL_EnglishWords_Table:
         self.database = database
         self.connection = sqlite3.connect(database)
         self.cursor = self.connection.cursor()
-        self.cursor.execute("""DROP TABLE IF EXISTS english_words_table
+        self.cursor.execute("""DROP TABLE IF EXISTS level1_table
                    """)
 
-        self.cursor.execute("""CREATE TABLE english_words_table
+        self.cursor.execute("""CREATE TABLE level1_table
                   (id integer, word text, translate text, sound text)
                """)
-        print('ew words table was created)))')
+        print('level1_table table was created)))')
 
 
     def set_level1(self):
@@ -98,7 +106,7 @@ class SQL_EnglishWords_Table:
             file = f.readlines()
             for it, row in enumerate(file):
                 word, translate = row.split(' ')
-                self.cursor.execute("INSERT INTO english_words_table VALUES(?, ?, ?, ?)", (it, word, translate, ' '))
+                self.cursor.execute("INSERT INTO level1_table VALUES(?, ?, ?, ?)", (it, word, translate, ' '))
                 self.connection.commit()
             print('LEVEL 1 WAS CREATED')
 
@@ -107,7 +115,7 @@ class SQL_EnglishWords_Table:
         "Смотрим сколько записей в таблице"
         self.connection = sqlite3.connect(self.database)
         with self.connection:
-            a = self.cursor.execute("""Select * from english_words_table""").fetchall()
+            a = self.cursor.execute("""Select * from level1_table""").fetchall()
             return len(a)
 
     def close(self):
@@ -116,6 +124,7 @@ class SQL_EnglishWords_Table:
 
 class SQL_UserTable:
     "Таблица юзеров"
+
     def __init__(self, database):
         self.connection = sqlite3.connect(database)
         self.cursor = self.connection.cursor()
@@ -123,7 +132,7 @@ class SQL_UserTable:
                    """)
 
         self.cursor.execute("""CREATE TABLE user_table
-                  (user_id integer, level_id integer, user_name text, user_time text)
+                  (user_id integer, level_id integer, user_name text, user_time text, time_from integer, time_to integer, days array integer, interval integer)
                """)
 
     def close(self):
@@ -157,10 +166,9 @@ class Process_sender():
     def start_sender(self):
         msg = 'Сообщение пришедшее один раз'
         schedule.every(1).minutes.do(Process_sender.send_pack, msg)
-        #  рандомное время
+        # рандомное время
         # schedule.every(5).to(10).seconds.do(my_job)
         # если время по базе
-        schedule.clear('daily-tasks')
         while True: #Запуск цикла
             schedule.run_pending()
             time.sleep(1)

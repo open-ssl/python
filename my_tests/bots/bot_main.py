@@ -8,7 +8,7 @@ import time
 # pkill -9 -f bot_main.py
 
 import sqlite3
-from sql.classes import SQL_ConnectTable, SQL_EnglishWords_Table, \
+from sql.classes import SQL_ConnectTable, \
                     SQL_UserTable, SQL_Main, UserCache, Process_sender
 
 token = ''
@@ -102,8 +102,7 @@ def start_command(message):
 
 @bot.message_handler(commands=['info'])
 def info_command(message):
-    msg = """Доступные команды:\nПервый уровень - /level1\nВторой уровень - /level2\n
-    ss - Пауза. Слова будут спрашиваться через определенное время\nВызов информации - /info
+    msg = """Доступные команды:\nПервый уровень - /level1\nВторой уровень - /level2\nss - Пауза. Слова будут спрашиваться через определенное время\nЕсли необходимо что-то поменять пользуйся командами\n/set_day - установить дни работы бота\n/set_time - установить время работы бота\n/set_period - изменить интервал сообщений\nВызов информации - /info\n
     """
     bot.send_message(message.chat.id, msg)
 
@@ -196,7 +195,7 @@ if __name__ == '__main__':
     # bot.send_message(, 'bot started')
     start_learn_process()
     print('bot started')
-    try:
-        bot.polling(none_stop=True)
-    except:
-        print('arr')
+    # try:
+    bot.polling(none_stop=True)
+    # except:
+        # print('arr')
