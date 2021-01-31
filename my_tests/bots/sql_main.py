@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import sqlite3
-from sql.classes import SQL_ConnectTable, SQL_Level1_Table, \
-                    SQL_UserTable
+from sql.classes import SQL_ConnectTable, \
+                    SQL_UserTable, SQL_Level1_Table
 
 database_name = 'bot.db'
 

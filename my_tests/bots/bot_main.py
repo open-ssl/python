@@ -162,7 +162,7 @@ def callback_inline(call):
                 time_sended_msg = bot.send_message(call.message.chat.id, 'Введите время в формате UTC например "+4" или "-10"')
                 bot.register_next_step_handler(time_sended_msg, set_time)
             else:
-                connect_obj.set_user_time(call.message.chat.id, call.data[3:])
+                connect_obj.set_user_utc(call.message.chat.id, call.data[3:])
                 bot.send_message(call.message.chat.id, f'Время {call.data[3:]} установлено')
                 cache[call.message.chat.id] = 'time_putted'
         elif call.data == "name_false":
@@ -183,7 +183,7 @@ def set_time(message):
     chat_id, inputed_time = message.chat.id, message.text
     connect_obj = SQL_Main(database_name)
     if len(inputed_time) < 4 and inputed_time[0] in ['+', '-'] and int(inputed_time[1:]):
-        connect_obj.set_user_time(chat_id, inputed_time)
+        connect_obj.set_user_utc(chat_id, inputed_time)
         bot.send_message(chat_id, f'Время {inputed_time} установлено')
         cache[message.chat.id] = 'time_putted'
     else:
@@ -192,8 +192,8 @@ def set_time(message):
 
 if __name__ == '__main__':
     # if int(time.strftime('%w')) not in
-    # bot.send_message(, 'bot started')
-    start_learn_process()
+    bot.send_message(, 'bot started')
+    # start_learn_process()
     print('bot started')
     # try:
     bot.polling(none_stop=True)
