@@ -1,0 +1,2 @@
+set remote github access
+git remote set-url origin https://token_name@github.com/open-ssl/python
