@@ -1,2 +1,7 @@
 set remote github access
+
+# add current repo
+git remote add origin https://github.com/open-ssl/react-sample.git
+
+
 git remote set-url origin https://token_name@github.com/open-ssl/python
