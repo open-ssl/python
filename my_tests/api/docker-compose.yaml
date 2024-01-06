@@ -1,0 +1,11 @@
+version: "3"
+
+services:
+  test_framework:
+    build: .
+    image: custom_pytest_framework
+    container_name: pytest_framework
+    environment:
+      - ENV=dev
+    volumes:
+      - .:/tests_projects/

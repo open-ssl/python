@@ -1,0 +1,5 @@
+.idea
+my_tests/api/logs
+my_tests/api/.pytest_cache
+my_tests/api/tests/.pytest_cache
+my_tests/api/test_results
