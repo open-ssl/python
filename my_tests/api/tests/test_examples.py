@@ -5,7 +5,7 @@ class TestSomeApi:
     def test_hello_call(self):
         name = "Stanislav"
         data = {'name': name}
-        response = CustomRequests.get("/api/hello", data=data)
+        response = CustomRequests.get("/hello", data=data)
         assert response.status_code == 200, "Wrong test response code {}".format(response.status_code)
 
         resp_dict = response.json()

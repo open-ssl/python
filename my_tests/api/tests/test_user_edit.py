@@ -7,7 +7,7 @@ class TestUserEdit(BaseCase):
     def test_edit_just_created_user(self):
         # REGISTER
         register_data = self.prepare_registration_data()
-        resp1 = CustomRequests.post("/api/user", data=register_data)
+        resp1 = CustomRequests.post("/user", data=register_data)
         Assertions.assert_correct_response_status(resp1, 200)
         Assertions.assert_json_has_key(resp1, "id")
 
@@ -21,14 +21,14 @@ class TestUserEdit(BaseCase):
             "email": email,
             "password": password,
         }
-        resp2 = CustomRequests.post("/api/user/login", data=login_data)
+        resp2 = CustomRequests.post("/user/login", data=login_data)
         auth_sid = self.get_cookie(resp2, "auth_sid")
         token = self.get_header(resp2, "x-csrf-token")
 
         # EDIT
         new_name = "Changed_name"
         resp3 = CustomRequests.put(
-            f"/api/user/{user_id}",
+            f"/user/{user_id}",
             headers={"x-csrf-token": token},
             cookies={"auth_sid": auth_sid},
             data={"firstName": new_name},
@@ -38,7 +38,7 @@ class TestUserEdit(BaseCase):
 
         # GET
         resp4 = CustomRequests.get(
-            f"/api/user/{user_id}",
+            f"/user/{user_id}",
             headers={"x-csrf-token": token},
             cookies={"auth_sid": auth_sid},
         )

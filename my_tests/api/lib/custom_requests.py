@@ -1,5 +1,6 @@
 import requests
 from my_tests.api.lib.logger import Logger
+from my_tests.api.environment import ENV_OBJECT
 
 
 class CustomRequests:
@@ -21,7 +22,7 @@ class CustomRequests:
 
     @staticmethod
     def _send(url: str, data: dict, headers: dict, cookies: dict, method: str):
-        url = f"{url}"
+        url = f"{ENV_OBJECT.get_base_url()}{url}"
 
         if headers is None:
             headers = {}
