@@ -64,7 +64,3 @@ class Assertions:
         """
         assert response.status_code == expected_status, f"Unexpected status code! Actual: {response.status_code}, " \
                                                         f"Expected: {expected_status}"
-
-
-
-

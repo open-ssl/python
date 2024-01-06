@@ -1,4 +1,4 @@
-from my_tests.api.lib.custom_requests import CustomRequests
+from lib.custom_requests import CustomRequests
 
 
 class TestSomeApi:

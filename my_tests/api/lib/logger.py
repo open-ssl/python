@@ -4,7 +4,7 @@ import os
 
 
 class Logger:
-    file_name = "../logs/log_" + str(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M_%S")) + ".txt"
+    file_name = "logs/log_" + str(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M_%S")) + ".txt"
 
     @classmethod
     def _write_log_to_file(cls, data: str):

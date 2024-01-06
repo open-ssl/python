@@ -1,6 +1,6 @@
-from my_tests.api.lib.assertions import Assertions
-from my_tests.api.lib.base_case import BaseCase
-from my_tests.api.lib.custom_requests import CustomRequests
+from lib.assertions import Assertions
+from lib.base_case import BaseCase
+from lib.custom_requests import CustomRequests
 
 
 class TestUserRegister(BaseCase):

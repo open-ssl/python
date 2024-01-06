@@ -1,6 +1,6 @@
 import requests
-from my_tests.api.lib.logger import Logger
-from my_tests.api.environment import ENV_OBJECT
+from lib.logger import Logger
+from environment import ENV_OBJECT
 
 
 class CustomRequests:

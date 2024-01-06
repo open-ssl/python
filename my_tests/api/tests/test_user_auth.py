@@ -1,5 +1,5 @@
 import pytest
-from my_tests.api.lib.custom_requests import CustomRequests
+from lib.custom_requests import CustomRequests
 
 
 class TestUserAuth:
@@ -10,7 +10,7 @@ class TestUserAuth:
             'email': "vinkotov@example.com",
             'password': "1234",
         }
-        response1 = CustomRequests.get("/user/login", data=data)
+        response1 = CustomRequests.post("/user/login", data=data)
         assert "auth_sid" in response1.cookies, "There is no auth cookie in the incoming response"
         assert "x-csrf-token" in response1.headers, "There is no CSRF token header in the incoming response"
         assert "user_id" in response1.json(), "There is no user id in the incoming response"
